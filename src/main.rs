@@ -13,7 +13,11 @@ struct Args {
 }
 
 //cargo -q run -- --help
-fn main() {
+fn main() -> Result<(), reqwest::Error> {
     let args = Args::parse();
-    println!("{}", args.days);
+
+    let body = reqwest::blocking::get("https://www.rust-lang.org")?.text()?;
+
+    println!("{:?}", body);
+    Ok(())
 }

@@ -14,9 +14,34 @@ struct Args {
 
 //cargo -q run -- --help
 fn main() -> Result<(), reqwest::Error> {
+    dotenv::dotenv().unwrap();
+
+    let mut api_key = None;
+    for (key, value) in std::env::vars() {
+        if key != "APIKEY" {
+            continue;
+        }
+        api_key = Some(value)
+    }
+    if api_key.is_none() {
+        panic!("need API key")
+    }
+    let api_key = api_key.unwrap();
+
     let args = Args::parse();
 
-    let body = reqwest::blocking::get("https://www.rust-lang.org")?.text()?;
+    let method = match args.days {
+        0 => "current",
+        _ => "forecast",
+    };
+
+    let days = args.days;
+
+    let url = format!(
+        "http://api.weatherapi.com/v1/{method}.json?key={api_key}&q={LAT},{LON}&aqi=no&days={days}"
+    );
+
+    let body = reqwest::blocking::get(url)?.bytes()?;
 
     println!("{:?}", body);
     Ok(())
